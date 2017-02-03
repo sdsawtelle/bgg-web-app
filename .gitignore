@@ -1,0 +1,9 @@
+errors/
+sessions/
+cache/
+databases/*
+!/databases/bgg_users.csv
+/static/geekbuddies.json
+syntax: glob
+*.pyc
+*~

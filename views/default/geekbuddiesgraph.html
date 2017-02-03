@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+.links line {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.node:hover circle {
+  fill: #000;
+}
+
+.node:hover text {
+  display: inline;
+}
+
+.instructions {
+    top:0;
+    width:80%;
+    margin: auto;
+    text-align:center;
+        font:20px Georgia;
+        <!--color:#5C5C5C;-->
+        <!--background:#F2FFED;-->
+        padding:10px;
+     margin-top: 30px;
+     margin-bottom: 30px;
+}
+
+svg {
+    display: block;
+    margin: auto;
+}
+
+
+</style>
+
+</body>
+
+<div class="instructions"> Mousover to see a user name. Click to go to a user page.
+     <span style="color: #02E4FF">Blue</span> is for buddies,  <span style="color: #50F50D">green</span> means similar ratings and  <span style="color: #FF0957">red</span> means dissimilar ratings .</div>
+
+
+<svg width="960" height="600" class="container"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="http://benschmidt.org/colorbar/colorbar.js"></script>
+
+
+<script>
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+var width = 960,
+    height = 500,
+    radius = 6;
+
+<!--var color = d3.scaleOrdinal(d3.schemeCategory20);-->
+var color =  d3.scaleLinear()
+    .domain([{{=XML(response._vars["mincol"])}}, 0, {{=XML(response._vars["maxcol"])}}])
+    .range(["#FF0957", "lightgrey", "#50F50D"]);
+
+
+var attractForce = d3.forceManyBody().strength(2).distanceMax(400).distanceMin(60);
+var repelForce = d3.forceManyBody().strength(-10).distanceMax(50).distanceMin(10);
+
+var simulation = d3.forceSimulation()
+    <!--.force("charge", d3.forceManyBody().strength(nodeCharge))-->
+    .force("link", d3.forceLink().id(function(d) { return d.id; }))
+    .force("charge", d3.forceManyBody())
+    .force("gravity", d3.forceManyBody().strength(nodeCharge))
+    <!--.force("attractForce", attractForce)-->
+    <!--.force("repelForce", repelForce)-->
+   .force('X', d3.forceX().x(width/2).strength(positionStrength))
+    .force('Y', d3.forceY().y(height/2).strength(positionStrength))
+    .force("center", d3.forceCenter(width / 2, height / 2));
+
+d3.json("{{=URL('static', 'geekbuddies.json')}}", function(error, graph) {
+  if (error) throw error;
+
+  var link = svg.append("g")
+    .attr("class", "links")
+    .selectAll("line")
+    .data(graph.links)
+    .enter().append("line")
+      <!--.attr("stroke-width", function(d) { return Math.sqrt(d.value); });-->
+    .attr("stroke-width", 1);
+
+  var node = svg.append("g")
+    .attr("class", "nodes")
+    .selectAll("circle")
+    .data(graph.nodes)
+    .enter().append("circle")
+    .attr("r",  nodeRadius)
+    .attr("fill", nodeColor)
+    <!--.attr("fill", function(d) { return color(d.group); })-->
+    .on("click", function(d){
+      window.open("https://boardgamegeek.com/user/" + d.id, '_blank')})
+    .call(d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended));
+
+
+    <!--node.append("circle")-->
+        <!--&lt;!&ndash;.enter().append("circle")&ndash;&gt;-->
+        <!--.attr("r", nodeRadius)-->
+        <!--.attr("fill", nodeColor);-->
+
+    <!--node.append("text")-->
+        <!--.attr("x", 12)-->
+        <!--.attr("dy", ".35em")-->
+        <!--.text(function(d) { return d.id; });-->
+
+
+  simulation
+      .nodes(graph.nodes)
+      .on("tick", ticked);
+
+  simulation.force("link")
+      .links(graph.links);
+
+
+  node.append("title")
+      .text(function(d) { return d.id; });
+
+  function ticked() {
+    <!--link-->
+        <!--.attr("x1", function(d) { return d.source.x; })-->
+        <!--.attr("y1", function(d) { return d.source.y; })-->
+        <!--.attr("x2", function(d) { return d.target.x; })-->
+        <!--.attr("y2", function(d) { return d.target.y; });-->
+
+    <!--node-->
+        <!--.attr("cx", function(d) { return d.x; })-->
+        <!--.attr("cy", function(d) { return d.y; });-->
+
+    node.attr("cx", function(d) { return d.x = Math.max(radius, Math.min(width - radius, d.x)); })
+        .attr("cy", function(d) { return d.y = Math.max(radius, Math.min(height - radius, d.y)); });
+
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+
+  }
+});
+
+
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
+
+<!--nodes[0].r = 20-->
+<!--&lt;!&ndash;var nodes = force.nodes();&ndash;&gt;-->
+<!--nodes[0].y += (height/2);-->
+<!--nodes[0].x += (width/2);-->
+<!--nodes[0].fixed = true;-->
+
+
+
+function nodeRadius(d) {
+    if (d.group == 0){
+        return 20;
+    } else if (d.group == 1){
+        return 13;
+    } else {
+        return 7;
+   }
+}
+
+function nodeText(d) {
+    if (d.group < 2){
+        return d.id;
+    } else {
+        return "";
+   }
+}
+
+function nodeColor(d) {
+    if (d.group == 0){
+        return "#02E4FF";
+    } else if (d.group == 1){
+        return "#85F1FE";
+    } else {
+        return color(d.col);
+   }
+}
+
+function nodeCharge(d) {
+    if (d.group == 0){
+        return 0.01;
+    } else if (d.group == 1){
+        return -20;
+    } else {
+        return 1;
+   }
+}
+
+function positionStrength(d) {
+    if (d.group == 3){
+        return 0.08;
+    }
+    else if (d.group == 0){
+        return 1.0;
+        }
+    else {
+        return 0.04;
+   }
+}
+
+
+
+// colorbar = Colorbar()
+//     .origin([15,60])
+//     .scale(color)
+//     .orient("horizontal")
+
+// placeholder = "#colorbar-here"
+
+// colorbarObject = d3.select(placeholder)
+//     .call(colorbar)
+
+</script>
+
+
+</body>
