@@ -22,15 +22,13 @@
 
 .instructions {
     top:0;
-    width:80%;
+    width:60%;
     margin: auto;
     text-align:center;
-        font:20px Georgia;
-        <!--color:#5C5C5C;-->
-        <!--background:#F2FFED;-->
-        padding:10px;
-     margin-top: 30px;
-     margin-bottom: 30px;
+    font:18px Georgia;
+    padding:10px;
+    margin-top: 30px;
+    text-align: justify;
 }
 
 svg {
@@ -38,14 +36,23 @@ svg {
     margin: auto;
 }
 
+.highlighted {
+padding: 1px 4px 1px 4px;
+background-color: #666;
+border-radius: 3px;
+}
 
 </style>
 
 </body>
 
-<div class="instructions"> Mousover to see a user name. Click to go to a user page.
-     <span style="color: #02E4FF">Blue</span> is for buddies,  <span style="color: #50F50D">green</span> means similar ratings and  <span style="color: #FF0957">red</span> means dissimilar ratings .</div>
-
+<div class="instructions">
+    Welcome to your BGG social graph! Mousover to see a user name and click to go to a user page.
+    <span class="highlighted" style="color: #02E4FF;">Blue</span> is for buddies,
+    <span class="highlighted" style="color: #50F50D">green</span> means similar ratings and
+    <span class="highlighted" style="color: #FF0957">red</span> means dissimilar ratings in terms of the Pearson Correlation. Isolated nodes are a random sample of users that correlate strongly with you.
+    The code for this project is <a href="https://github.com/sdsawtelle/bgg-web-app">on github</a>
+    and a writeup of this project can be found <a href="https://sdsawtelle.github.io/blog/output/boardgamegeek-data-scraping.html">here.</a></div>
 
 <svg width="960" height="600" class="container"></svg>
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -183,11 +190,11 @@ function dragended(d) {
 
 function nodeRadius(d) {
     if (d.group == 0){
-        return 20;
+        return 23;
     } else if (d.group == 1){
-        return 13;
+        return 12;
     } else {
-        return 7;
+        return 7.5;
    }
 }
 
